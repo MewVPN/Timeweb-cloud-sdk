@@ -44,7 +44,6 @@ class HTTPClient:
                     await asyncio.sleep(2**attempt)
                     continue
                 raise ServerError(response.text)
-
             response.raise_for_status()
             if response.content:
                 return response.json()
