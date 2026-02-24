@@ -20,10 +20,9 @@ jobs:
       - uses: astral-sh/setup-uv@v3
 
       - name: Install git-cliff
-        run: |
-          curl -L https://github.com/orhun/git-cliff/releases/latest/download/git-cliff-x86_64-unknown-linux-gnu.tar.gz \
-          | tar xz
-          sudo mv git-cliff /usr/local/bin/
+        uses: orhun/git-cliff-action@v2
+        with:
+          version: latest
 
       - name: Generate CHANGELOG
         run: git-cliff -o CHANGELOG.md
