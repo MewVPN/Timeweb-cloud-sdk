@@ -1,0 +1,13 @@
+[changelog]
+header = "# Changelog\n\nВсе изменения этого проекта.\n"
+
+[git]
+conventional_commits = true
+filter_unconventional = true
+
+[commit_types]
+feat = { title = "🚀 Features" }
+fix = { title = "🐛 Fixes" }
+refactor = { title = "♻ Refactor" }
+docs = { title = "📚 Docs" }
+chore = { title = "🧹 Chore" }
