@@ -1,45 +1,31 @@
 from .create_models import ServerCreateRequest
+from .preset_models import ServerPreset
 
 
 class ServerBuilder:
-    def __init__(self, service, name: str, preset_id: int):
+    def __init__(self, service, name: str, preset: ServerPreset):
         self._service = service
-        self._data = ServerCreateRequest(name=name, preset_id=preset_id, os_id=99)
-        self._os_set = False
-        self._image_set = False
+        self._name = name
+        self._preset = preset
+
+        self._os_id: int | None = None
+        self._software_id: int | None = None
 
     def os(self, os_id: int):
-        self._data.os_id = os_id
-        self._data.image_id = None
-        self._os_set = True
-        self._image_set = False
+        self._os_id = os_id
         return self
 
-    def image(self, image_id: str):
-        self._data.image_id = image_id
-        self._data.os_id = None
-        self._image_set = True
-        self._os_set = False
-        return self
-
-    def location(self, location: str):
-        self._data.location = location
-        return self
-
-    def availability_zone(self, zone: str):
-        self._data.availability_zone = zone
-        return self
-
-    def cloud_init(self, data: str):
-        self._data.cloud_init = data
+    def software(self, software_id: int):
+        self._software_id = software_id
         return self
 
     async def create(self):
-        if not self._os_set and not self._image_set:
-            raise ValueError("You must specify either os() or image()")
-
-        request = ServerCreateRequest(**self._data.model_dump(exclude_none=True))
-
+        request = ServerCreateRequest(
+            name=self._name,
+            preset_id=self._preset.id,
+            os_id=self._os_id,
+            software_id=self._software_id,
+        )
         return await self._service.create(request)
 
     async def create_and_wait(self):

@@ -21,8 +21,7 @@ class ServerCreateRequest(BaseModel):
     image_id: Optional[str] = None
 
     configurator_id: Optional[int] = None
-    location: Optional[str] = None
-    availability_zone: Optional[str] = None
+    software_id: Optional[int] = None
     boot_mode: Optional[str] = None
 
     is_ddos_guard: Optional[bool] = None
