@@ -4,7 +4,6 @@ from pydantic import BaseModel
 
 class ServerPreset(BaseModel):
     id: int
-    location: str
     price: int
 
     cpu: int
@@ -34,3 +33,15 @@ class ServerPreset(BaseModel):
     @property
     def is_kz(self) -> bool:
         return self.location == "kz-1"
+
+    @property
+    def hardware_key(self) -> tuple[int, int]:
+        return self.cpu, self.ram
+
+    @property
+    def is_nvme(self) -> bool:
+        return self.disk_type == "nvme"
+
+    @property
+    def is_high_cpu(self) -> bool:
+        return "high" in self.vds_node_configuration_name.lower()

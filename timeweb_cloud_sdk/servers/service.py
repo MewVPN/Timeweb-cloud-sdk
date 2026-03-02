@@ -2,6 +2,7 @@ from typing import List
 
 from .._http import HTTPClient
 from .._polling import wait_for_condition
+from ..exceptions import NotFoundError
 
 from .models import Server
 from .create_models import ServerCreateRequest
@@ -33,6 +34,28 @@ class ServersService:
             json=request.model_dump(exclude_none=True),
         )
         return Server(**data["server"])
+
+    async def delete(self, server_id: int) -> None:
+        await self._http.request("DELETE", f"/servers/{server_id}")
+
+    async def delete_and_wait(
+        self,
+        server_id: int,
+        interval: float = 3,
+        timeout: float = 300,
+    ) -> None:
+        await self.delete(server_id)
+
+        async def fetch():
+            try:
+                return await self.get(server_id)
+            except NotFoundError:
+                return None
+
+        def check(server):
+            return server is None
+
+        await wait_for_condition(fetch, check, interval=interval, timeout=timeout)
 
     async def presets(self) -> List[ServerPreset]:
         data = await self._http.request("GET", "/presets/servers")

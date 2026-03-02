@@ -6,11 +6,8 @@ from .servers.service import ServersService
 class TimewebCloud:
     BASE_URL = "https://api.timeweb.cloud/api/v1"
 
-    def __init__(self, token: str):
-        self._http = HTTPClient(
-            token=token,
-            base_url=self.BASE_URL,
-        )
+    def __init__(self, token: str, transport=None):
+        self._http = HTTPClient(token=token, base_url=self.BASE_URL, transport=transport)
 
         self.dns = DNSService(self._http)
         self.servers = ServersService(self._http)

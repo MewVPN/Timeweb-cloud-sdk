@@ -1,4 +1,4 @@
-from typing import List, Optional, Literal
+from typing import List, Optional, Literal, Callable
 
 from .preset_models import ServerPreset
 
@@ -23,12 +23,10 @@ class PresetSelector:
     @staticmethod
     def _validate_location(location: str):
         if location not in ALLOWED_LOCATIONS:
-            raise ValueError(
-                f"Invalid location '{location}'. " f"Allowed: {sorted(ALLOWED_LOCATIONS)}"
-            )
+            raise ValueError(f"Invalid location '{location}'. Allowed: {sorted(ALLOWED_LOCATIONS)}")
 
-    def _filter(self, fn):
-        self._filters = list(filter(fn, self._filters))
+    def _filter(self, fn: Callable[[ServerPreset], bool]):
+        self._filters = [p for p in self._filters if fn(p)]
         return self
 
     def reset(self):
@@ -40,38 +38,38 @@ class PresetSelector:
         return self._filter(lambda p: p.location == location)
 
     def nvme_only(self):
-        return self._filter(lambda p: p.disk_type.lower() == "nvme")
+        return self._filter(lambda p: p.is_nvme)
 
     def high_cpu(self, location: Optional[Location] = None):
         if location:
             self.location(location)
 
-        return self._filter(lambda p: float(p.cpu_frequency) >= 5.0)
+        return self._filter(lambda p: p.is_high_cpu)
 
     def recommended(self, location: Optional[Location] = None):
         if location:
             self.location(location)
 
-        return self._filter(lambda p: any("recommended" in tag for tag in p.tags))
+        return self._filter(lambda p: any("recommended" in tag.lower() for tag in p.tags))
 
     def by_hardware(
         self,
         cpu: Optional[int] = None,
         ram: Optional[int] = None,
     ):
+        if cpu is not None and ram is not None:
+            return self._filter(lambda p: p.hardware_key == (cpu, ram))
+
         if cpu is not None:
-            self._filter(lambda p: p.cpu == cpu)
+            return self._filter(lambda p: p.cpu == cpu)
 
         if ram is not None:
-            self._filter(lambda p: p.ram == ram)
+            return self._filter(lambda p: p.ram == ram)
 
         return self
 
     def by_bandwidth(self, bandwidth: Literal[200, 1000]):
-        if bandwidth is not None:
-            self._filter(lambda p: p.bandwidth == bandwidth)
-
-        return self
+        return self._filter(lambda p: p.bandwidth == bandwidth)
 
     def cheapest(self, location: Optional[Location] = None) -> ServerPreset:
         if location:
@@ -92,4 +90,4 @@ class PresetSelector:
         return max(self._filters, key=lambda p: p.price)
 
     def all(self) -> List[ServerPreset]:
-        return self._filters
+        return self._filters.copy()
